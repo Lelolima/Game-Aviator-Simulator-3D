@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste do Aviator Simulator 3D</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .test-panel {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            padding: 10px 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.fail {
+            background-color: #f44336;
+        }
+        button.fail:hover {
+            background-color: #d32f2f;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .warning {
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
+        .log-panel {
+            background-color: #333;
+            color: #fff;
+            font-family: monospace;
+            height: 200px;
+            margin-top: 20px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .game-view {
+            background-color: #222;
+            border-radius: 5px;
+            height: 400px;
+            margin: 20px 0;
+            position: relative;
+            width: 100%;
+        }
+        .checkpoint {
+            background-color: yellow;
+            border-radius: 50%;
+            height: 30px;
+            position: absolute;
+            width: 30px;
+        }
+        .checkpoint.active {
+            background-color: green;
+        }
+        .player {
+            background-color: blue;
+            height: 40px;
+            position: absolute;
+            transform: rotate(0deg);
+            transition: all 0.5s;
+            width: 60px;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .slider-container {
+            margin: 10px 20px;
+            width: 200px;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .gauge {
+            background-color: #eee;
+            border-radius: 10px;
+            height: 20px;
+            margin-top: 5px;
+            overflow: hidden;
+            width: 100%;
+        }
+        .gauge-fill {
+            background-color: #4CAF50;
+            height: 100%;
+            transition: width 0.3s;
+            width: 0%;
+        }
+        .gauge-fill.fuel {
+            background-color: #ff9800;
+        }
+        .gauge-fill.health {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Teste do Aviator Simulator 3D</h1>
+        <p>Esta página permite testar as funcionalidades principais do jogo</p>
+    </header>
+
+    <div class="container">
+        <div class="test-panel">
+            <h2>Painel de Controle de Testes</h2>
+            
+            <div class="test-section">
+                <h3>Simulação do Jogo</h3>
+                <div class="game-view" id="gameView">
+                    <div class="player" id="player"></div>
+                    <!-- Checkpoints serão adicionados via JavaScript -->
+                </div>
+                
+                <div class="controls">
+                    <div>
+                        <button id="startEngine">Ligar Motor</button>
+                        <button id="resetSim">Resetar Simulação</button>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="throttle">Acelerador: <span id="throttleValue">0%</span></label>
+                        <input type="range" id="throttle" min="0" max="100" value="0">
+                        <div class="gauge">
+                            <div class="gauge-fill" id="throttleGauge"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="fuel">Combustível: <span id="fuelValue">100%</span></label>
+                        <div class="gauge">
+                            <div class="gauge-fill fuel" id="fuelGauge" style="width: 100%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="health">Integridade: <span id="healthValue">100%</span></label>
+                        <div class="gauge">
+                            <div class="gauge-fill health" id="healthGauge" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>Teste de Componentes</h3>
+                <button id="testCheckpoints">Testar Checkpoints</button>
+                <button id="testMissions">Testar Sistema de Missões</button>
+                <button id="testPhysics">Testar Física de Voo</button>
+                <button id="testRefuel">Testar Reabastecimento</button>
+                <button id="testEffects">Testar Efeitos Visuais</button>
+                
+                <div id="testStatus" class="status"></div>
+            </div>
+        </div>
+        
+        <div class="log-panel" id="logPanel">
+            <div>Console de Logs</div>
+            <div id="logs"></div>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        const gameState = {
+            engineOn: false,
+            flying: false,
+            fuel: 100,
+            health: 100,
+            throttle: 0,
+            position: { x: 50, y: 350 },
+            rotation: 0,
+            checkpoints: [],
+            activeMission: null,
+            missionTime: 0,
+            missionComplete: false
+        };
+
+        // Elementos DOM
+        const player = document.getElementById('player');
+        const gameView = document.getElementById('gameView');
+        const startEngineBtn = document.getElementById('startEngine');
+        const resetSimBtn = document.getElementById('resetSim');
+        const throttleSlider = document.getElementById('throttle');
+        const throttleValue = document.getElementById('throttleValue');
+        const throttleGauge = document.getElementById('throttleGauge');
+        const fuelValue = document.getElementById('fuelValue');
+        const fuelGauge = document.getElementById('fuelGauge');
+        const healthValue = document.getElementById('healthValue');
+        const healthGauge = document.getElementById('healthGauge');
+        const testStatus = document.getElementById('testStatus');
+        const logs = document.getElementById('logs');
+
+        // Botões de teste
+        const testCheckpointsBtn = document.getElementById('testCheckpoints');
+        const testMissionsBtn = document.getElementById('testMissions');
+        const testPhysicsBtn = document.getElementById('testPhysics');
+        const testRefuelBtn = document.getElementById('testRefuel');
+        const testEffectsBtn = document.getElementById('testEffects');
+
+        // Inicialização
+        function init() {
+            updatePlayerPosition();
+            setupEventListeners();
+            log('Sistema de teste inicializado');
+        }
+
+        // Configurar listeners de eventos
+        function setupEventListeners() {
+            startEngineBtn.addEventListener('click', toggleEngine);
+            resetSimBtn.addEventListener('click', resetSimulation);
+            throttleSlider.addEventListener('input', updateThrottle);
+            
+            testCheckpointsBtn.addEventListener('click', testCheckpoints);
+            testMissionsBtn.addEventListener('click', testMissions);
+            testPhysicsBtn.addEventListener('click', testPhysics);
+            testRefuelBtn.addEventListener('click', testRefuel);
+            testEffectsBtn.addEventListener('click', testEffects);
+            
+            // Adicionar controles de teclado
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        // Funções de atualização da UI
+        function updatePlayerPosition() {
+            player.style.left = gameState.position.x + 'px';
+            player.style.top = gameState.position.y + 'px';
+            player.style.transform = `rotate(${gameState.rotation}deg)`;
+        }
+
+        function updateThrottle() {
+            gameState.throttle = parseInt(throttleSlider.value);
+            throttleValue.textContent = gameState.throttle + '%';
+            throttleGauge.style.width = gameState.throttle + '%';
+            
+            if (gameState.engineOn) {
+                // Consumir combustível baseado no acelerador
+                consumeFuel();
+            }
+        }
+
+        function updateFuel(value) {
+            gameState.fuel = Math.max(0, Math.min(100, value));
+            fuelValue.textContent = Math.round(gameState.fuel) + '%';
+            fuelGauge.style.width = gameState.fuel + '%';
+            
+            if (gameState.fuel <= 0 && gameState.engineOn) {
+                toggleEngine(); // Desligar motor se acabar combustível
+                log('AVISO: Combustível esgotado! Motor desligado.', 'warning');
+            }
+        }
+
+        function updateHealth(value) {
+            gameState.health = Math.max(0, Math.min(100, value));
+            healthValue.textContent = Math.round(gameState.health) + '%';
+            healthGauge.style.width = gameState.health + '%';
+            
+            if (gameState.health <= 0) {
+                crashAircraft();
+            }
+        }
+
+        // Funções de simulação
+        function toggleEngine() {
+            if (gameState.fuel <= 0 && !gameState.engineOn) {
+                log('Não é possível ligar o motor: sem combustível', 'error');
+                return;
+            }
+            
+            gameState.engineOn = !gameState.engineOn;
+            startEngineBtn.textContent = gameState.engineOn ? 'Desligar Motor' : 'Ligar Motor';
+            log(gameState.engineOn ? 'Motor ligado' : 'Motor desligado');
+            
+            if (gameState.engineOn) {
+                // Iniciar simulação quando o motor estiver ligado
+                startSimulation();
+            } else {
+                // Parar simulação quando o motor estiver desligado
+                stopSimulation();
+            }
+        }
+
+        let simulationInterval;
+        
+        function startSimulation() {
+            simulationInterval = setInterval(() => {
+                if (gameState.throttle > 20) {
+                    // Mover a aeronave baseado no acelerador
+                    moveAircraft();
+                }
+                
+                // Consumir combustível
+                if (gameState.engineOn) {
+                    consumeFuel();
+                }
+                
+                // Atualizar missão ativa
+                if (gameState.activeMission) {
+                    updateMission();
+                }
+            }, 100);
+        }
+
+        function stopSimulation() {
+            clearInterval(simulationInterval);
+        }
+
+        function moveAircraft() {
+            // Simular movimento baseado no acelerador
+            const speed = gameState.throttle / 10;
+            const radians = gameState.rotation * Math.PI / 180;
+            
+            gameState.position.x += Math.sin(radians) * speed;
+            gameState.position.y -= Math.cos(radians) * speed;
+            
+            // Manter dentro dos limites
+            gameState.position.x = Math.max(0, Math.min(gameView.clientWidth - 60, gameState.position.x));
+            gameState.position.y = Math.max(0, Math.min(gameView.clientHeight - 40, gameState.position.y));
+            
+            updatePlayerPosition();
+            checkCollisions();
+        }
+
+        function consumeFuel() {
+            // Consumir combustível baseado no acelerador
+            const rate = 0.05 * (gameState.throttle / 100);
+            updateFuel(gameState.fuel - rate);
+        }
+
+        function handleKeyDown(e) {
+            if (!gameState.engineOn) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    gameState.rotation = (gameState.rotation - 5) % 360;
+                    break;
+                case 'ArrowRight':
+                    gameState.rotation = (gameState.rotation + 5) % 360;
+                    break;
+                case 'ArrowUp':
+                    throttleSlider.value = Math.min(100, parseInt(throttleSlider.value) + 5);
+                    updateThrottle();
+                    break;
+                case 'ArrowDown':
+                    throttleSlider.value = Math.max(0, parseInt(throttleSlider.value) - 5);
+                    updateThrottle();
+                    break;
+                case 'r':
+                case 'R':
+                    if (canRefuel()) {
+                        refuel();
+                    }
+                    break;
+            }
+            
+            updatePlayerPosition();
+        }
+
+        function checkCollisions() {
+            // Verificar colisões com checkpoints
+            gameState.checkpoints.forEach(checkpoint => {
+                if (!checkpoint.reached) {
+                    const distance = getDistance(gameState.position, checkpoint.position);
+                    if (distance < 30) { // Raio de colisão
+                        reachCheckpoint(checkpoint);
+                    }
+                }
+            });
+        }
+
+        function reachCheckpoint(checkpoint) {
+            checkpoint.reached = true;
+            checkpoint.element.classList.add('active');
+            log(`Checkpoint alcançado: ${checkpoint.id}`);
+            
+            // Tocar som (simulado)
+            log('Som de checkpoint reproduzido');
+            
+            // Verificar se todos os checkpoints foram alcançados
+            const allReached = gameState.checkpoints.every(cp => cp.reached);
+            if (allReached && gameState.activeMission) {
+                completeMission();
+            }
+        }
+
+        function crashAircraft() {
+            log('ALERTA: Aeronave danificada!', 'error');
+            gameState.engineOn = false;
+            stopSimulation();
+            startEngineBtn.textContent = 'Ligar Motor';
+        }
+
+        // Funções de teste
+        function testCheckpoints() {
+            resetSimulation();
+            clearCheckpoints();
+            
+            // Criar checkpoints para teste
+            createCheckpoint(150, 100, 'CP1');
+            createCheckpoint(300, 200, 'CP2');
+            createCheckpoint(450, 300, 'CP3');
+            
+            log('Teste de Checkpoints iniciado');
+            setTestStatus('Dirija até os checkpoints para testá-los', 'warning');
+        }
+
+        function testMissions() {
+            resetSimulation();
+            clearCheckpoints();
+            
+            // Criar checkpoints para a missão
+            createCheckpoint(150, 100, 'M1-CP1');
+            createCheckpoint(300, 200, 'M1-CP2');
+            createCheckpoint(450, 300, 'M1-CP3');
+            
+            // Criar missão de teste
+            gameState.activeMission = {
+                title: 'Missão de Teste',
+                description: 'Alcance todos os checkpoints antes que o tempo acabe',
+                timeLimit: 60,
+                reward: 100,
+                completed: false
+            };
+            
+            gameState.missionTime = gameState.activeMission.timeLimit;
+            
+            log(`Missão iniciada: ${gameState.activeMission.title}`);
+            log(`Descrição: ${gameState.activeMission.description}`);
+            log(`Tempo limite: ${gameState.activeMission.timeLimit} segundos`);
+            
+            setTestStatus('Missão ativa: alcance todos os checkpoints', 'warning');
+            
+            // Iniciar contador de tempo da missão
+            startMissionTimer();
+        }
+
+        let missionInterval;
+        
+        function startMissionTimer() {
+            missionInterval = setInterval(() => {
+                if (gameState.activeMission && !gameState.activeMission.completed) {
+                    gameState.missionTime -= 1;
+                    
+                    if (gameState.missionTime <= 0) {
+                        failMission('Tempo esgotado');
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateMission() {
+            // Atualizar informações da missão na UI
+            if (gameState.activeMission) {
+                setTestStatus(`Missão: ${gameState.activeMission.title} - Tempo: ${Math.round(gameState.missionTime)}s`, 'warning');
+            }
+        }
+
+        function completeMission() {
+            if (!gameState.activeMission) return;
+            
+            clearInterval(missionInterval);
+            gameState.activeMission.completed = true;
+            
+            log(`Missão concluída: ${gameState.activeMission.title}`, 'success');
+            log(`Recompensa: ${gameState.activeMission.reward} pontos`);
+            
+            setTestStatus('Missão concluída com sucesso!', 'success');
+        }
+
+        function failMission(reason) {
+            if (!gameState.activeMission) return;
+            
+            clearInterval(missionInterval);
+            
+            log(`Missão falhou: ${reason}`, 'error');
+            setTestStatus(`Missão falhou: ${reason}`, 'error');
+        }
+
+        function testPhysics() {
+            resetSimulation();
+            
+            log('Teste de Física de Voo iniciado');
+            log('Use as setas para controlar a aeronave');
+            log('← → : Rotação');
+            log('↑ ↓ : Acelerador');
+            
+            setTestStatus('Teste a física de voo usando os controles', 'warning');
+        }
+
+        function testRefuel() {
+            resetSimulation();
+            
+            // Simular baixo combustível
+            updateFuel(20);
+            
+            // Criar posto de reabastecimento
+            const refuelStation = document.createElement('div');
+            refuelStation.style.position = 'absolute';
+            refuelStation.style.width = '50px';
+            refuelStation.style.height = '50px';
+            refuelStation.style.backgroundColor = 'orange';
+            refuelStation.style.left = '400px';
+            refuelStation.style.top = '200px';
+            refuelStation.style.borderRadius = '5px';
+            gameView.appendChild(refuelStation);
+            
+            gameState.refuelStation = {
+                position: { x: 400, y: 200 },
+                element: refuelStation
+            };
+            
+            log('Teste de Reabastecimento iniciado');
+            log('Combustível reduzido para 20%');
+            log('Dirija até o posto de reabastecimento (laranja) e pressione R');
+            
+            setTestStatus('Teste o sistema de reabastecimento', 'warning');
+        }
+
+        function canRefuel() {
+            if (!gameState.refuelStation) return false;
+            
+            const distance = getDistance(gameState.position, gameState.refuelStation.position);
+            return distance < 50; // Distância para reabastecimento
+        }
+
+        function refuel() {
+            if (!canRefuel()) return;
+            
+            log('Reabastecendo...');
+            
+            // Simular reabastecimento gradual
+            let refuelInterval = setInterval(() => {
+                updateFuel(gameState.fuel + 5);
+                
+                if (gameState.fuel >= 100) {
+                    clearInterval(refuelInterval);
+                    log('Reabastecimento concluído!', 'success');
+                }
+            }, 500);
+        }
+
+        function testEffects() {
+            resetSimulation();
+            
+            log('Teste de Efeitos Visuais iniciado');
+            log('Simulando danos para testar efeitos visuais');
+            
+            // Simular danos graduais para testar efeitos visuais
+            let damageInterval = setInterval(() => {
+                updateHealth(gameState.health - 10);
+                
+                if (gameState.health <= 0) {
+                    clearInterval(damageInterval);
+                }
+            }, 1000);
+            
+            setTestStatus('Testando efeitos visuais de dano', 'warning');
+        }
+
+        // Funções utilitárias
+        function createCheckpoint(x, y, id) {
+            const checkpoint = document.createElement('div');
+            checkpoint.className = 'checkpoint';
+            checkpoint.style.left = x + 'px';
+            checkpoint.style.top = y + 'px';
+            gameView.appendChild(checkpoint);
+            
+            const checkpointObj = {
+                id: id,
+                position: { x, y },
+                element: checkpoint,
+                reached: false
+            };
+            
+            gameState.checkpoints.push(checkpointObj);
+            return checkpointObj;
+        }
+
+        function clearCheckpoints() {
+            // Remover checkpoints existentes
+            gameState.checkpoints.forEach(checkpoint => {
+                if (checkpoint.element && checkpoint.element.parentNode) {
+                    checkpoint.element.parentNode.removeChild(checkpoint.element);
+                }
+            });
+            
+            gameState.checkpoints = [];
+        }
+
+        function resetSimulation() {
+            // Parar simulação atual
+            stopSimulation();
+            
+            // Resetar estado do jogo
+            gameState.engineOn = false;
+            gameState.flying = false;
+            gameState.fuel = 100;
+            gameState.health = 100;
+            gameState.throttle = 0;
+            gameState.position = { x: 50, y: 350 };
+            gameState.rotation = 0;
+            
+            // Limpar missão ativa
+            if (gameState.activeMission) {
+                clearInterval(missionInterval);
+                gameState.activeMission = null;
+            }
+            
+            // Remover posto de reabastecimento se existir
+            if (gameState.refuelStation && gameState.refuelStation.element) {
+                gameState.refuelStation.element.parentNode.removeChild(gameState.refuelStation.element);
+                gameState.refuelStation = null;
+            }
+            
+            // Atualizar UI
+            startEngineBtn.textContent = 'Ligar Motor';
+            throttleSlider.value = 0;
+            updateThrottle();
+            updateFuel(100);
+            updateHealth(100);
+            updatePlayerPosition();
+            
+            log('Simulação resetada');
+            setTestStatus('', '');
+        }
+
+        function getDistance(pos1, pos2) {
+            const dx = pos1.x - pos2.x;
+            const dy = pos1.y - pos2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function log(message, type = '') {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            
+            if (type) {
+                logEntry.classList.add(type);
+            }
+            
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function setTestStatus(message, type) {
+            testStatus.textContent = message;
+            testStatus.className = 'status';
+            
+            if (type) {
+                testStatus.classList.add(type);
+            }
+        }
+
+        // Inicializar a aplicação
+        window.onload = init;
+    </script>
+</body>
+</html>
