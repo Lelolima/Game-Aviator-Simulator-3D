@@ -109,7 +109,7 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 
 ## Suporte
 
-Para suporte técnico ou dúvidas sobre o jogo, entre em contato através do email: suporte@aviatorsimulator.com
+Para suporte técnico ou dúvidas sobre o jogo, entre em contato através do email: lelolima806@gmail.com
 
 ---
 
