@@ -25,6 +25,21 @@ public class FisicaDeVoo : MonoBehaviour
     public Text altitudeTexto;
     public Text estadoVooTexto;
     
+    [Header("Efeitos Ambientais")]
+    public float intensidadeVento = 0.0f;
+    public Vector3 direcaoVento = Vector3.zero;
+    public float intensidadeTurbulencia = 0.0f;
+
+    [Header("Curvas Aerodinâmicas")]
+    public AnimationCurve curvaSustentacao;
+    public AnimationCurve curvaArrasto;
+    
+    [Header("Configurações Avançadas")]
+    public float coeficienteLift = 0.5f;
+    public float coeficienteDrag = 0.02f;
+    public AnimationCurve curvaLift; // Curva de sustentação baseada no ângulo de ataque
+    public bool usarModeloAvancado = true;
+    
     private Rigidbody rb;
     private AudioSource motorSom;
     
@@ -77,8 +92,54 @@ public class FisicaDeVoo : MonoBehaviour
         emVoo = !Physics.Raycast(transform.position, Vector3.down, out hit, 3.0f);
     }
     
+    private void AplicarForcasAerodinamicasAvancadas()
+    {
+        if (!usarModeloAvancado) return;
+        
+        // Calcular ângulo de ataque
+        float anguloAtaque = Vector3.Angle(transform.forward, rb.velocity) - 90f;
+        // Verificar se o ângulo de ataque está dentro de um intervalo aceitável
+        anguloAtaque = Mathf.Clamp(anguloAtaque, -45f, 45f);
+        
+        // Calcular forças apenas se houver mudanças significativas
+        if (rb.velocity.magnitude > 0.1f) {
+            // Obter coeficiente de sustentação da curva
+            float coefSustentacao = curvaLift.Evaluate(anguloAtaque);
+            
+            // Calcular densidade do ar baseada na altitude
+            float densidadeAr = Mathf.Exp(-altitudeAtual / 10000f);
+            
+            // Calcular velocidade relativa ao ar (considerando vento)
+            Vector3 velocidadeRelativa = rb.velocity - direcaoVento * intensidadeVento;
+            float velocidadeAr = velocidadeRelativa.magnitude;
+            
+            // Calcular forças
+            float forcaSustentacao = 0.5f * densidadeAr * velocidadeAr * velocidadeAr * coefSustentacao * coeficienteLift;
+            float forcaArrasto = 0.5f * densidadeAr * velocidadeAr * velocidadeAr * coeficienteDrag;
+            
+            // Aplicar forças
+            Vector3 direcaoSustentacao = Vector3.Cross(velocidadeRelativa.normalized, transform.right);
+            rb.AddForce(direcaoSustentacao * forcaSustentacao);
+            rb.AddForce(-velocidadeRelativa.normalized * forcaArrasto);
+        }
+        
+        // Aplicar turbulência
+        if (intensidadeTurbulencia > 0)
+        {
+            Vector3 forcaTurbulencia = new Vector3(
+                Mathf.PerlinNoise(Time.time, 0) - 0.5f,
+                Mathf.PerlinNoise(0, Time.time) - 0.5f,
+                Mathf.PerlinNoise(Time.time, Time.time) - 0.5f
+            ) * intensidadeTurbulencia;
+            
+            rb.AddForce(forcaTurbulencia);
+        }
+    }
+
     void FixedUpdate()
     {
+        AplicarForcasAerodinamicasAvancadas();
+        
         if (!motorLigado) return;
         
         // Aplicar forças aerodinâmicas

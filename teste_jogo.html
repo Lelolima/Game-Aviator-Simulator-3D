@@ -146,6 +146,17 @@
         .gauge-fill.health {
             background-color: #f44336;
         }
+        .feedback {
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -155,6 +166,11 @@
     </header>
 
     <div class="container">
+        <div class="controls">
+            <button onclick="startTest()">Iniciar Teste</button>
+            <button onclick="pauseTest()">Pausar Teste</button>
+            <button onclick="resetTest()">Resetar Teste</button>
+        </div>
         <div class="test-panel">
             <h2>Painel de Controle de Testes</h2>
             
@@ -204,6 +220,10 @@
                 <button id="testEffects">Testar Efeitos Visuais</button>
                 
                 <div id="testStatus" class="status"></div>
+            </div>
+            <div class="feedback">
+                <h3>Feedback do Teste</h3>
+                <p id="testFeedback">Aguardando início do teste...</p>
             </div>
         </div>
         
@@ -702,6 +722,26 @@
             if (type) {
                 testStatus.classList.add(type);
             }
+        }
+
+        function startTest() {
+            document.getElementById('testFeedback').innerText = 'Teste iniciado...';
+            // Lógica para iniciar o teste
+        }
+
+        function pauseTest() {
+            document.getElementById('testFeedback').innerText = 'Teste pausado.';
+            // Lógica para pausar o teste
+        }
+
+        function resetTest() {
+            document.getElementById('testFeedback').innerText = 'Teste resetado.';
+            // Lógica para resetar o teste
+        }
+
+        function updateWindSpeed(value) {
+            document.getElementById('windSpeedValue').innerText = value;
+            // Lógica para atualizar a velocidade do vento no teste
         }
 
         // Inicializar a aplicação

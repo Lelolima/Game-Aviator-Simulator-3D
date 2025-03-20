@@ -96,9 +96,46 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 
 ## Instalação
 
-1. Baixe o arquivo de instalação do jogo
-2. Execute o instalador e siga as instruções na tela
-3. Inicie o jogo através do atalho criado na área de trabalho ou menu iniciar
+Para instalar o Aviator Simulator 3D, siga as etapas abaixo:
+
+1. Clone o repositório para o seu ambiente local:
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   ```
+
+2. Navegue até o diretório do projeto:
+   ```bash
+   cd Aviator-Simulator-3D
+   ```
+
+3. Instale as dependências necessárias (se houver):
+   ```bash
+   # Exemplo para projetos Unity
+   # Nenhuma dependência externa é necessária além do Unity
+   ```
+
+## Execução
+
+Para executar o jogo, abra o projeto no Unity e clique em "Play" para iniciar a simulação.
+
+## Contribuição
+
+Contribuições são bem-vindas! Para contribuir com o projeto, siga estas etapas:
+
+1. Faça um fork do repositório.
+2. Crie um branch para sua feature ou correção de bug:
+   ```bash
+   git checkout -b minha-feature
+   ```
+3. Faça commit das suas alterações:
+   ```bash
+   git commit -m 'Adiciona minha feature'
+   ```
+4. Envie para o branch original:
+   ```bash
+   git push origin minha-feature
+   ```
+5. Crie um Pull Request.
 
 ## Créditos
 
