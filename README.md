@@ -146,7 +146,7 @@ Contribuições são bem-vindas! Para contribuir com o projeto, siga estas etapa
 
 ## Suporte
 
-Para suporte técnico ou dúvidas sobre o jogo, entre em contato através do email: suporte@aviatorsimulator.com
+Para suporte técnico ou dúvidas sobre o jogo, entre em contato através do email: lelolima806@gmail.com
 
 ---
 
