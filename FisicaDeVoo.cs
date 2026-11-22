@@ -40,12 +40,12 @@ public class FisicaDeVoo : MonoBehaviour
     public AnimationCurve curvaLift; // Curva de sustentação baseada no ângulo de ataque
     public bool usarModeloAvancado = true;
     
-    private Rigidbody rb;
+    [HideInInspector] public Rigidbody rb;
     private AudioSource motorSom;
     
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        if (rb == null) rb = GetComponent<Rigidbody>();
         motorSom = GetComponent<AudioSource>();
         
         // Configurar física da aeronave
@@ -62,11 +62,11 @@ public class FisicaDeVoo : MonoBehaviour
             motorLigado = !motorLigado;
             if (motorLigado)
             {
-                motorSom.Play();
+                if (motorSom != null) motorSom.Play();
             }
             else
             {
-                motorSom.Stop();
+                if (motorSom != null) motorSom.Stop();
             }
         }
         
@@ -92,30 +92,30 @@ public class FisicaDeVoo : MonoBehaviour
         emVoo = !Physics.Raycast(transform.position, Vector3.down, out hit, 3.0f);
     }
     
-    private void AplicarForcasAerodinamicasAvancadas()
+    public void AplicarForcasAerodinamicasAvancadas()
     {
         if (!usarModeloAvancado) return;
         
         // Calcular ângulo de ataque
         float anguloAtaque = Vector3.Angle(transform.forward, rb.velocity) - 90f;
         // Verificar se o ângulo de ataque está dentro de um intervalo aceitável
-        anguloAtaque = Mathf.Clamp(anguloAtaque, -45f, 45f);
+        anguloAtaque = Aerodinamica.LimitarAnguloAtaque(anguloAtaque);
         
         // Calcular forças apenas se houver mudanças significativas
         if (rb.velocity.magnitude > 0.1f) {
             // Obter coeficiente de sustentação da curva
-            float coefSustentacao = curvaLift.Evaluate(anguloAtaque);
+            float coefSustentacao = curvaLift != null ? curvaLift.Evaluate(anguloAtaque) : 1f;
             
             // Calcular densidade do ar baseada na altitude
-            float densidadeAr = Mathf.Exp(-altitudeAtual / 10000f);
+            float densidadeAr = Aerodinamica.DensidadeRelativa(altitudeAtual);
             
             // Calcular velocidade relativa ao ar (considerando vento)
             Vector3 velocidadeRelativa = rb.velocity - direcaoVento * intensidadeVento;
             float velocidadeAr = velocidadeRelativa.magnitude;
             
             // Calcular forças
-            float forcaSustentacao = 0.5f * densidadeAr * velocidadeAr * velocidadeAr * coefSustentacao * coeficienteLift;
-            float forcaArrasto = 0.5f * densidadeAr * velocidadeAr * velocidadeAr * coeficienteDrag;
+            float forcaSustentacao = Aerodinamica.Forca(densidadeAr, velocidadeAr, coefSustentacao * coeficienteLift);
+            float forcaArrasto = Aerodinamica.Forca(densidadeAr, velocidadeAr, coeficienteDrag);
             
             // Aplicar forças
             Vector3 direcaoSustentacao = Vector3.Cross(velocidadeRelativa.normalized, transform.right);
