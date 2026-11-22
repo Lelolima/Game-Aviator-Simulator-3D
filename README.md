@@ -1,5 +1,10 @@
 # Aviator Simulator 3D
 
+> **Estado do repositório (auditoria de 2026-11-22):** este repositório contém apenas
+> **scripts C# avulsos** para Unity. Não há projeto Unity (`Assets/`, `ProjectSettings/`,
+> cenas, prefabs, modelos ou sons), portanto não é possível abrir e jogar diretamente.
+> As descrições abaixo são o design pretendido; veja "O que está implementado" para o que existe no código.
+
 ## Visão Geral
 Aviator Simulator 3D é um simulador de voo realista que oferece uma experiência imersiva de pilotagem de aeronaves. O jogo combina física de voo realista, gráficos detalhados e um sistema de missões envolvente para proporcionar uma experiência completa de simulação de voo.
 
@@ -38,9 +43,8 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 - **R**: Reabastecer (quando próximo a um ponto de reabastecimento)
 
 ### Controles Adicionais
-- **ESC**: Pausar jogo/Abrir menu
-- **M**: Abrir mapa
-- **C**: Alternar visão da câmera
+- **M**: Abrir mapa (minimapa do `HUDAvancado`)
+- **ESC** (pausar) e **C** (alternar câmera): descritos no design, **não implementados** nos scripts
 
 ## Mecânicas de Jogo
 
@@ -54,7 +58,8 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 - Consumo contínuo de combustível durante o voo
 - Pontos de reabastecimento espalhados pelo mapa
 - Interface visual mostra o nível atual de combustível
-- Ficar sem combustível causa falha do motor
+- Ficar sem combustível: hoje `Combustivel.cs` apenas registra "Sem combustível!" no log; o motor não é desligado
+- Observação: o consumo atual é contínuo enquanto o componente está ativo, mesmo com o motor desligado
 
 ### Sistema de Missões
 - Complete checkpoints em sequência
@@ -64,19 +69,7 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 
 ## Requisitos Técnicos
 
-### Requisitos Mínimos
-- **Sistema Operacional**: Windows 7/8/10/11
-- **Processador**: Intel Core i3 ou AMD equivalente
-- **Memória**: 4GB RAM
-- **Placa de Vídeo**: NVIDIA GeForce GTX 660 ou AMD Radeon HD 7870
-- **Armazenamento**: 2GB de espaço disponível
-
-### Requisitos Recomendados
-- **Sistema Operacional**: Windows 10/11
-- **Processador**: Intel Core i5 ou AMD equivalente
-- **Memória**: 8GB RAM
-- **Placa de Vídeo**: NVIDIA GeForce GTX 1060 ou AMD Radeon RX 580
-- **Armazenamento**: 2GB de espaço disponível
+Não há build do jogo; requisitos de hardware não foram medidos. Para usar os scripts é preciso o editor Unity com o pacote **Post Processing** (v2), usado por `EfeitosVisuais.cs`.
 
 ## Desenvolvimento
 
@@ -86,37 +79,39 @@ Aviator Simulator 3D é um simulador de voo realista que oferece uma experiênci
 - **Física**: Sistema de física integrado do Unity
 - **Áudio**: Sistema de áudio do Unity
 
-### Estrutura do Código
-- **ControleDeVoo.cs**: Gerencia os controles básicos da aeronave
-- **FisicaDeVoo.cs**: Implementa a física realista de voo
-- **SistemaDeMissoes.cs**: Gerencia as missões e objetivos
-- **SistemaDeReabastecimento.cs**: Controla o sistema de combustível
-- **EfeitosVisuais.cs**: Gerencia os efeitos visuais do jogo
-- **MenuPrincipal.cs**: Controla a interface do menu principal
+### O que está implementado (scripts na raiz)
+- **FisicaDeVoo.cs**: física de voo (motor, sustentação, arrasto, estol, vento, turbulência)
+- **Aerodinamica.cs**: fórmulas puras (densidade do ar, força aerodinâmica, ângulo de ataque), testáveis sem Unity
+- **ControleDeVoo.cs**, **CameraSeguir.cs**, **HUD.cs**, **HUDAvancado.cs**, **SomDeVoo.cs**
+- **Combustivel.cs**, **SistemaDeReabastecimento.cs**
+- **Dano.cs**, **SistemaDano.cs**, **EfeitosVisuais.cs**
+- **Checkpoint.cs**, **GerenciadorDeMissao.cs**, **SistemaDeMissoes.cs**, **Pontuacao.cs**, **SistemaDeSalvamento.cs**
+- **Clima.cs**, **SistemaClima.cs**, **MenuPrincipal.cs**
+- **teste_jogo.html**: protótipo/maquete em HTML+JS que **simula** a interface no navegador; não executa os scripts C#
 
-## Instalação
+## Como usar os scripts
 
-Para instalar o Aviator Simulator 3D, siga as etapas abaixo:
+1. Crie um projeto 3D no Unity e instale o pacote Post Processing (Package Manager).
+2. Copie os arquivos `.cs` da raiz para `Assets/Scripts/`.
+3. Monte a cena (aeronave com `Rigidbody`, `AudioSource`, `FisicaDeVoo`, `Combustivel`, `Dano` etc.) e ligue as referências no Inspector.
 
-1. Clone o repositório para o seu ambiente local:
-   ```bash
-   git clone <URL_DO_REPOSITORIO>
-   ```
+Esses passos não foram executados na auditoria (sem Unity disponível).
 
-2. Navegue até o diretório do projeto:
-   ```bash
-   cd Aviator-Simulator-3D
-   ```
+## Testes e verificação
 
-3. Instale as dependências necessárias (se houver):
-   ```bash
-   # Exemplo para projetos Unity
-   # Nenhuma dependência externa é necessária além do Unity
-   ```
+```bash
+# Requer .NET SDK 10
+dotnet test Tests/Logica            # testes reais da lógica pura (Aerodinamica)
+dotnet build ci/compile-check       # compila todos os scripts contra stubs mínimos da API do Unity
+```
 
-## Execução
+- `ci/compile-check` detecta tipos/membros inexistentes e erros de C#, mas **não substitui** compilar no editor: os stubs não implementam comportamento.
+- `Tests/EditMode/FisicaDeVooTest.cs` é um teste do Unity Test Framework; só roda no Test Runner do editor.
+- O CI (`.github/workflows/ci.yml`) executa os dois comandos acima.
 
-Para executar o jogo, abra o projeto no Unity e clique em "Play" para iniciar a simulação.
+## Variáveis de ambiente
+
+Nenhuma.
 
 ## Contribuição
 
