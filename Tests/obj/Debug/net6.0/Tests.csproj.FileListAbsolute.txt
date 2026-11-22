@@ -1,6 +1,0 @@
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.csproj.AssemblyReference.cache
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.AssemblyInfoInputs.cache
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.AssemblyInfo.cs
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.csproj.CoreCompileInputs.cache
-C:\Users\Itautec\WorkSpace CURSOR\Tests\obj\Debug\net6.0\Tests.sourcelink.json

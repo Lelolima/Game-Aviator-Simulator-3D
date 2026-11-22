@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Verificacao de compilacao SEM Unity: compila os scripts do jogo contra
+    stubs minimos da API do Unity (UnityStubs.cs). Detecta tipos/membros
+    inexistentes e erros de C#, mas NAO substitui compilar no editor Unity.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0414;CS0169;CS0649;CS0618;CS0108</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../*.cs" />
+    <Compile Include="UnityStubs.cs" />
+  </ItemGroup>
+</Project>
